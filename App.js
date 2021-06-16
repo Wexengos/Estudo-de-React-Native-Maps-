@@ -34,6 +34,10 @@ export default class App extends Component {
     ],
   };
 
+  _mapReady = () => {
+    this.state.places[0].mark.showCallout();   //exibir Callout assim que iniciar a aplicação (i.e. mostrar o mapa)
+  }
+
   render() {
     const { latitude, longitude } = this.state.places[0]; //latitude e longitude dinâmicos
 
@@ -44,7 +48,7 @@ export default class App extends Component {
           initialRegion={{         //regiao na qual o mapa sera aberto
             latitude,
             longitude,
-            latitudeDelta: 0.0142, //ENTENDER ←
+            latitudeDelta: 0.0142, //zoom no mapa
             longitudeDelta: 0.0231,
           }}
           style={styles.mapView}
@@ -53,9 +57,13 @@ export default class App extends Component {
           zoomEnabled={false}            //sejam feitas em código.
           showsPointsOfInterest={false}
           showBuildings={false}
+          onMapReady={this._mapReady}
         >
           { this.state.places.map(place => (
             <MapView.Marker
+              ref={mark => place.mark = mark}
+              title={place.title}
+              description={place.description}
               key={place.id}
               coordinate={{
                 latitude: place.latitude,
@@ -77,17 +85,21 @@ export default class App extends Component {
               ? Math.round(scrolled / Dimensions.get('window').width) 
               : 0;
 
-            console.log(place);
+            //console.log(place);
 
-            const { latitude, longitude } = this.state.places[place];
+            const { latitude, longitude, mark } = this.state.places[place];
 
               this.mapView.animateToRegion(
                 {latitude: latitude, 
                 longitude: longitude, 
                 latitudeDelta: 0.0042,
                 longitudeDelta: 0.0031}, 
-                500
+                1000
               );
+
+              setTimeout(() => {
+                mark.showCallout();
+              }, 1000);
           }}
         >
           { this.state.places.map(place => (
