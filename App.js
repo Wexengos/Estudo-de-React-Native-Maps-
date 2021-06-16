@@ -3,6 +3,9 @@ import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
 
 import MapView from 'react-native-maps';
 
+
+const { height, width } = Dimensions.get('window');  //pega as dimensoes da tela do smartphone.
+
 export default class App extends Component {
   state = {
     
@@ -66,16 +69,38 @@ export default class App extends Component {
           horizontal
           showsHorizontalScrollIndicator={false}
           pagingEnabled
+          onMomentumScrollEnd={e => {
+            const scrolled = e.nativeEvent.contentOffset.x;   //saber quanto o usuário "caminhou" (no caso no eixo x)
+            
+
+            const place = (scrolled > 0)
+              ? Math.round(scrolled / Dimensions.get('window').width) 
+              : 0;
+
+            console.log(place);
+
+            const { latitude, longitude } = this.state.places[place];
+
+              this.mapView.animateToRegion(
+                {latitude: latitude, 
+                longitude: longitude, 
+                latitudeDelta: 0.0042,
+                longitudeDelta: 0.0031}, 
+                500
+              );
+          }}
         >
-          <View style={styles.place}></View>
-          <View style={styles.place}></View>
+          { this.state.places.map(place => (
+            <View key={place.id} style={styles.place}>
+              <Text>{place.title}</Text>
+              <Text>{place.description}</Text>
+            </View>
+          ))}
         </ScrollView>
       </View>
     );
 }
 }
-
-const { height, width } = Dimensions.get('window');  //pega as dimensoes da tela do smartphone.
 
 const styles = StyleSheet.create({
   container: {
